@@ -278,3 +278,4 @@ Argument EVENT is a string describing the type of event."
   (helm-qiita:set-timer))
 
 (provide 'helm-qiita)
+;;; helm-qiita.el ends here
