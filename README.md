@@ -31,7 +31,7 @@ You can install `helm-qiita.el` from [MELPA](https://github.com/milkypostman/mel
 (helm-qiita:initialize)
 ```
 
-Scopes `read_qiita` or `read_qiita_team` for `helm-qiita:access-token` are required.
+Requires scopes `read_qiita` or `read_qiita_team` for `helm-qiita:access-token`.
 
 ## Usage
 
