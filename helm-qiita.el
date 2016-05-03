@@ -200,7 +200,8 @@ Argument EVENT is a string describing the type of event."
 (defun helm-qiita:valid-http-responsep ()
   (save-excursion
     (goto-char (point-min))
-    (re-search-forward (regexp-quote "HTTP/1.1 200 OK") (helm-qiita:point-of-separator) t)))
+    (re-search-forward
+     (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t)))
 
 (defconst helm-qiita:link-field-body-regexp
   "^<\\(https://.*\\)>; rel=\"first\", <\\(https://.*\\)>; rel=\"next\", <\\(https://.*\\)>; rel=\"last\"")
