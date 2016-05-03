@@ -5,7 +5,7 @@
 ;; Author: Takashi Masuda <masutaka.net@gmail.com>
 ;; URL: https://github.com/masutaka/emacs-helm-qiita
 ;; Version: 0.0.1
-;; Package-Requires: ((helm "20160401.1145"))
+;; Package-Requires: ((helm "20160401.1145") (cl-lib "0.5"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 
 (require 'helm)
 (require 'json)
+(require 'cl-lib)
 
 (defgroup helm-qiita nil
   "Qiita with helm interface"
@@ -237,7 +238,7 @@ Argument EVENT is a string describing the type of event."
 (defun helm-qiita:stock-tags (stock)
   (let ((tags (cdr (assoc 'tags stock))) result)
     (dotimes (i (length tags))
-      (add-to-list 'result (cdr (assoc 'name (aref tags i)))))
+      (cl-pushnew (cdr (assoc 'name (aref tags i))) result :test #'equal))
     (reverse result)))
 
 (defun helm-qiita:http-debug-start ()
