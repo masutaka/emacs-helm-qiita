@@ -203,18 +203,17 @@ Argument EVENT is a string describing the type of event."
     (re-search-forward
      (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t)))
 
-(defconst helm-qiita:link-field-body-regexp
-  "^<\\(https://.*\\)>; rel=\"first\", <\\(https://.*\\)>; rel=\"next\", <\\(https://.*\\)>; rel=\"last\"")
-
 (defun helm-qiita:next-link ()
   (save-excursion
-    (let (field-body next-link)
+    (let ((field-body))
       (goto-char (point-min))
       (when (re-search-forward "^Link: " (helm-qiita:point-of-separator) t)
 	(setq field-body (buffer-substring-no-properties (point) (point-at-eol)))
-	(if (string-match helm-qiita:link-field-body-regexp field-body)
-	    (setq next-link (match-string 2 field-body))))
-      next-link)))
+	(cond
+	 ((string-match "^<\\(https://.*\\)>; rel=\"first\", <\\(https://.*\\)>; rel=\"prev\", <\\(https://.*\\)>; rel=\"next\"" field-body)
+	  (match-string 3 field-body))
+	 ((string-match "^<\\(https://.*\\)>; rel=\"first\", <\\(https://.*\\)>; rel=\"next\"" field-body)
+	  (match-string 2 field-body)))))))
 
 (defun helm-qiita:point-of-separator ()
   (save-excursion
