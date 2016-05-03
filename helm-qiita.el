@@ -177,7 +177,7 @@ Argument CANDIDATE a line string of a stock."
   "Receive a response of `helm-qiita:http-request'.
 Argument PROCESS is a http-request process.
 Argument EVENT is a string describing the type of event."
-  (let (response next-link stock)
+  (let (valid-response response next-link stock)
     (with-current-buffer (get-buffer helm-qiita:http-buffer-name)
       (setq valid-response (helm-qiita:valid-http-responsep))
       (setq next-link (helm-qiita:next-link))
