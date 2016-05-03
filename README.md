@@ -2,11 +2,11 @@
 
 ## Introduction
 
-`helm-qiita.el` is a helm interface for Qiita.
+`helm-qiita.el` is a helm interface for [Qiita](https://qiita.com/).
 
 You can open your Qiita Stocks to Web browser using helm interface.
 
-Also supports Qiita:Team.
+Also supports [Qiita:Team](https://teams.qiita.com/).
 
 ## Screenshot
 
