@@ -89,6 +89,9 @@ DO NOT SET VALUE MANUALLY.")
   "Timer object for Qiita caching will be stored here.
 DO NOT SET VALUE MANUALLY.")
 
+(defvar helm-qiita:debug-mode nil)
+(defvar helm-qiita:debug-start-time nil)
+
 (defun helm-qiita:load ()
   "Load `helm-qiita:file'."
   (with-current-buffer (helm-candidate-buffer 'global)
@@ -162,6 +165,7 @@ Argument CANDIDATE a line string of a stock."
 	(if (get-buffer work-buffer-name)
 	    (kill-buffer work-buffer-name))
 	(get-buffer-create work-buffer-name))
+      (helm-qiita:http-debug-start)
       (setq proc (apply 'start-process
 			proc-name
 			http-buffer-name
@@ -175,6 +179,7 @@ Argument PROCESS is a http-request process.
 Argument EVENT is a string describing the type of event."
   (let (response next-link stock)
     (with-current-buffer (get-buffer helm-qiita:http-buffer-name)
+      (setq valid-response (helm-qiita:valid-http-responsep))
       (setq next-link (helm-qiita:next-link))
       (setq response (json-read-from-string
 		      (buffer-substring-no-properties
@@ -187,9 +192,15 @@ Argument EVENT is a string describing the type of event."
 			(helm-qiita:stock-title stock)
 			(helm-qiita:stock-format-tags stock)
 			(helm-qiita:stock-url stock))))
+      (helm-qiita:http-debug-end valid-response)
       (if next-link
 	  (helm-qiita:http-request next-link)
 	(write-region (point-min) (point-max) helm-qiita:file)))))
+
+(defun helm-qiita:valid-http-responsep ()
+  (save-excursion
+    (goto-char (point-min))
+    (re-search-forward (regexp-quote "HTTP/1.1 200 OK") (helm-qiita:point-of-separator) t)))
 
 (defconst helm-qiita:link-field-body-regexp
   "^<\\(https://.*\\)>; rel=\"first\", <\\(https://.*\\)>; rel=\"next\", <\\(https://.*\\)>; rel=\"last\"")
@@ -228,6 +239,19 @@ Argument EVENT is a string describing the type of event."
     (dotimes (i (length tags))
       (add-to-list 'result (cdr (assoc 'name (aref tags i)))))
     (reverse result)))
+
+(defun helm-qiita:http-debug-start ()
+  (setq helm-qiita:debug-start-time (current-time)))
+
+(defun helm-qiita:http-debug-end (result)
+  (if helm-qiita:debug-mode
+      (message (format "[Q] %s to create %s (%0.1fsec) at %s."
+		       (if result "Success" "Failure")
+		       helm-qiita:file
+		       (time-to-seconds
+			(time-subtract (current-time)
+				       helm-qiita:debug-start-time))
+		       (format-time-string "%Y-%m-%d %H:%M:%S" (current-time))))))
 
 (defun helm-qiita:set-timer ()
   "Set timer."
