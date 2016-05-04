@@ -55,7 +55,7 @@ You can create in https://qiita.com/settings/applications"
 
 (defcustom helm-qiita:file
   (expand-file-name "helm-qiita" user-emacs-directory)
-  "A cache file of your Qiita Stocks"
+  "A cache file of your Qiita Stocks."
   :type '(choice (const nil)
 		 string)
   :group 'helm-qiita)
@@ -151,7 +151,8 @@ Argument CANDIDATE a line string of a stock."
 	  helm-qiita:username))
 
 (defun helm-qiita:http-request (&optional url)
-  "Make a new HTTP request for create `helm-qiita:file'."
+  "Make a new HTTP request for create `helm-qiita:file'.
+Use `helm-qiita:url' if URL is nil."
   (let ((http-buffer-name helm-qiita:http-buffer-name)
 	(work-buffer-name helm-qiita:work-buffer-name)
 	(proc-name "helm-qiita")
@@ -199,12 +200,14 @@ Argument EVENT is a string describing the type of event."
 	(write-region (point-min) (point-max) helm-qiita:file)))))
 
 (defun helm-qiita:valid-http-responsep ()
+  "Return if the http response is valid."
   (save-excursion
     (goto-char (point-min))
     (re-search-forward
      (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t)))
 
 (defun helm-qiita:next-link ()
+  "Return the next link the http response has."
   (save-excursion
     (let ((field-body))
       (goto-char (point-min))
@@ -217,17 +220,21 @@ Argument EVENT is a string describing the type of event."
 	  (match-string 2 field-body)))))))
 
 (defun helm-qiita:point-of-separator ()
+  "Return point between header and body of the http response, as an integer."
   (save-excursion
     (goto-char (point-min))
     (re-search-forward "^?$" nil t)))
 
 (defun helm-qiita:stock-title (stock)
+  "Return a title of STOCK."
   (cdr (assoc 'title stock)))
 
 (defun helm-qiita:stock-url (stock)
+  "Return a url of STOCK."
   (cdr (assoc 'url stock)))
 
 (defun helm-qiita:stock-format-tags (stock)
+  "Return formatted tags of STOCK."
   (let ((result ""))
     (mapc
      (lambda (tag)
@@ -236,15 +243,19 @@ Argument EVENT is a string describing the type of event."
     result))
 
 (defun helm-qiita:stock-tags (stock)
+  "Return tags of STOCK, as an list."
   (let ((tags (cdr (assoc 'tags stock))) result)
     (dotimes (i (length tags))
       (cl-pushnew (cdr (assoc 'name (aref tags i))) result :test #'equal))
     (reverse result)))
 
 (defun helm-qiita:http-debug-start ()
+  "Start debug mode."
   (setq helm-qiita:debug-start-time (current-time)))
 
 (defun helm-qiita:http-debug-end (result)
+  "Finish debug mode.
+RESULT is boolean."
   (if helm-qiita:debug-mode
       (message (format "[Q] %s to create %s (%0.1fsec) at %s."
 		       (if result "Success" "Failure")
