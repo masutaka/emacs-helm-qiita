@@ -194,7 +194,7 @@ Argument EVENT is a string describing the type of event."
 			(helm-qiita:stock-title stock)
 			(helm-qiita:stock-format-tags stock)
 			(helm-qiita:stock-url stock))))
-      (helm-qiita:http-debug-end valid-response)
+      (helm-qiita:http-debug-stop valid-response)
       (if next-link
 	  (helm-qiita:http-request next-link)
 	(write-region (point-min) (point-max) helm-qiita:file)))))
@@ -253,8 +253,8 @@ Argument EVENT is a string describing the type of event."
   "Start debug mode."
   (setq helm-qiita:debug-start-time (current-time)))
 
-(defun helm-qiita:http-debug-end (result)
-  "Finish debug mode.
+(defun helm-qiita:http-debug-stop (result)
+  "Stop debug mode.
 RESULT is boolean."
   (if helm-qiita:debug-mode
       (message (format "[Q] %s to create %s (%0.1fsec) at %s."
