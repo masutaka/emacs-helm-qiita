@@ -4,7 +4,7 @@
 
 ;; Author: Takashi Masuda <masutaka.net@gmail.com>
 ;; URL: https://github.com/masutaka/emacs-helm-qiita
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Package-Requires: ((helm "20160401.1145") (cl-lib "0.5"))
 
 ;; This program is free software: you can redistribute it and/or modify
