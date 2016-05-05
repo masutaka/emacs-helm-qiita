@@ -190,7 +190,7 @@ If next-link is exist, continue to request it."
   (let (valid-response response next-link stock)
     (with-current-buffer (get-buffer helm-qiita-http-buffer-name)
       (setq valid-response (helm-qiita-valid-http-responsep))
-      (helm-qiita-http-debug-stop valid-response process)
+      (helm-qiita-http-debug-finish valid-response process)
       (unless valid-response
 	(error "Invalid http response"))
       (setq next-link (helm-qiita-next-link))
@@ -263,7 +263,7 @@ If next-link is exist, continue to request it."
   "Start debug mode."
   (setq helm-qiita-debug-start-time (current-time)))
 
-(defun helm-qiita-http-debug-stop (result process)
+(defun helm-qiita-http-debug-finish (result process)
   "Stop debug mode.
 RESULT is boolean.
 PROCESS is a http-request process."
