@@ -25,13 +25,13 @@ You can install `helm-qiita.el` from [MELPA](https://github.com/milkypostman/mel
 ## Setup
 
 ```lisp
-(setq helm-qiita:username "Your Qiita Account")
-(setq helm-qiita:organization "Your Organization") ;; optional. For example, "feedforce"
-(setq helm-qiita:access-token "Your Access Token") ;; See https://qiita.com/settings/applications
-(helm-qiita:initialize)
+(setq helm-qiita-username "Your Qiita Account")
+(setq helm-qiita-organization "Your Organization") ;; optional. For example, "feedforce"
+(setq helm-qiita-access-token "Your Access Token") ;; See https://qiita.com/settings/applications
+(helm-qiita-initialize)
 ```
 
-Requires scopes `read_qiita` or `read_qiita_team` for `helm-qiita:access-token`.
+Requires scopes `read_qiita` or `read_qiita_team` for `helm-qiita-access-token`.
 
 ## Usage
 
@@ -39,7 +39,7 @@ Requires scopes `read_qiita` or `read_qiita_team` for `helm-qiita:access-token`.
 
 * A function to be able to select your Qiita Stocks.
 
-### `helm-qiita:source`
+### `helm-qiita-source`
 
 * A helm source for your Qiita Stocks.
 
