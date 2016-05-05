@@ -31,95 +31,95 @@
 
 (defgroup helm-qiita nil
   "Qiita with helm interface"
-  :prefix "helm-qiita:"
+  :prefix "helm-qiita-"
   :group 'helm)
 
-(defcustom helm-qiita:username nil
+(defcustom helm-qiita-username nil
   "A username of your Qiita account."
   :type '(choice (const nil)
 		 string)
   :group 'helm-qiita)
 
-(defcustom helm-qiita:organization nil
+(defcustom helm-qiita-organization nil
   "A name of your Qiita organization."
   :type '(choice (const nil)
 		 string)
   :group 'helm-qiita)
 
-(defcustom helm-qiita:access-token nil
+(defcustom helm-qiita-access-token nil
   "Your Qiita access token.
 You can create in https://qiita.com/settings/applications"
   :type '(choice (const nil)
 		 string)
   :group 'helm-qiita)
 
-(defcustom helm-qiita:file
+(defcustom helm-qiita-file
   (expand-file-name "helm-qiita" user-emacs-directory)
   "A cache file of your Qiita Stocks."
   :type '(choice (const nil)
 		 string)
   :group 'helm-qiita)
 
-(defcustom helm-qiita:candidate-number-limit 10000
+(defcustom helm-qiita-candidate-number-limit 10000
   "Candidate number limit."
   :type 'integer
   :group 'helm-qiita)
 
-(defcustom helm-qiita:interval (* 1 60 60)
-  "Number of seconds to call `helm-qiita:http-request'."
+(defcustom helm-qiita-interval (* 1 60 60)
+  "Number of seconds to call `helm-qiita-http-request'."
   :type 'integer
   :group 'helm-qiita)
 
-(defvar helm-qiita:url nil
-  "Cache a result of `helm-qiita:get-url'.
+(defvar helm-qiita-url nil
+  "Cache a result of `helm-qiita-get-url'.
 DO NOT SET VALUE MANUALLY.")
 
-(defvar helm-qiita:curl-program nil
-  "Cache a result of `helm-qiita:find-curl-program'.
+(defvar helm-qiita-curl-program nil
+  "Cache a result of `helm-qiita-find-curl-program'.
 DO NOT SET VALUE MANUALLY.")
 
-(defvar helm-qiita:http-buffer-name " *helm-qiita-http*"
-  "HTTP Working buffer name of `helm-qiita:http-request'.")
+(defvar helm-qiita-http-buffer-name " *helm-qiita-http*"
+  "HTTP Working buffer name of `helm-qiita-http-request'.")
 
-(defvar helm-qiita:work-buffer-name " *helm-qiita-work*"
-  "Working buffer name of `helm-qiita:http-request'.")
+(defvar helm-qiita-work-buffer-name " *helm-qiita-work*"
+  "Working buffer name of `helm-qiita-http-request'.")
 
-(defvar helm-qiita:full-frame helm-full-frame)
+(defvar helm-qiita-full-frame helm-full-frame)
 
-(defvar helm-qiita:timer nil
+(defvar helm-qiita-timer nil
   "Timer object for Qiita caching will be stored here.
 DO NOT SET VALUE MANUALLY.")
 
-(defvar helm-qiita:debug-mode nil)
-(defvar helm-qiita:debug-start-time nil)
+(defvar helm-qiita-debug-mode nil)
+(defvar helm-qiita-debug-start-time nil)
 
-(defun helm-qiita:load ()
-  "Load `helm-qiita:file'."
+(defun helm-qiita-load ()
+  "Load `helm-qiita-file'."
   (with-current-buffer (helm-candidate-buffer 'global)
     (let ((coding-system-for-read 'utf-8))
-      (insert-file-contents helm-qiita:file))))
+      (insert-file-contents helm-qiita-file))))
 
-(defvar helm-qiita:action
-  '(("Browse URL" . helm-qiita:browse-url)
-    ("Show URL" . helm-qiita:show-url)))
+(defvar helm-qiita-action
+  '(("Browse URL" . helm-qiita-browse-url)
+    ("Show URL" . helm-qiita-show-url)))
 
-(defun helm-qiita:browse-url (candidate)
+(defun helm-qiita-browse-url (candidate)
   "Action for Browse URL.
 Argument CANDIDATE a line string of a stock."
   (string-match "\\[href:\\(.+\\)\\]" candidate)
   (browse-url (match-string 1 candidate)))
 
-(defun helm-qiita:show-url (candidate)
+(defun helm-qiita-show-url (candidate)
   "Action for Show URL.
 Argument CANDIDATE a line string of a stock."
   (string-match "\\[href:\\(.+\\)\\]" candidate)
   (message (match-string 1 candidate)))
 
-(defvar helm-qiita:source
+(defvar helm-qiita-source
   (helm-build-in-buffer-source "Qiita Stocks"
-    :init 'helm-qiita:load
-    :action 'helm-qiita:action
-    :candidate-number-limit helm-qiita:candidate-number-limit
+    :init 'helm-qiita-load
+    :action 'helm-qiita-action
+    :candidate-number-limit helm-qiita-candidate-number-limit
     :multiline t
     :migemo t)
   "Helm source for Qiita.")
@@ -128,37 +128,37 @@ Argument CANDIDATE a line string of a stock."
 (defun helm-qiita ()
   "Search Qiita Stocks using `helm'."
   (interactive)
-  (let ((helm-full-frame helm-qiita:full-frame))
-    (unless (file-exists-p helm-qiita:file)
-      (error (format "%s not found" helm-qiita:file)))
-    (helm :sources helm-qiita:source
+  (let ((helm-full-frame helm-qiita-full-frame))
+    (unless (file-exists-p helm-qiita-file)
+      (error (format "%s not found" helm-qiita-file)))
+    (helm :sources helm-qiita-source
 	  :prompt "Find Qiita Stocks: ")))
 
-(defun helm-qiita:find-curl-program ()
+(defun helm-qiita-find-curl-program ()
   "Return an appropriate `curl' program pathname or error if not found."
   (or
    (executable-find "curl")
    (error "Cannot find `curl' helm-qiita.el requires")))
 
-(defun helm-qiita:get-url ()
-  "Return Qiita URL or error if `helm-qiita:username' is nil."
-  (unless helm-qiita:username
-    (error "Variable `helm-qiita:username' is nil"))
+(defun helm-qiita-get-url ()
+  "Return Qiita URL or error if `helm-qiita-username' is nil."
+  (unless helm-qiita-username
+    (error "Variable `helm-qiita-username' is nil"))
   (format "https://%s/api/v2/users/%s/stocks?page=1&per_page=20"
-	  (if (stringp helm-qiita:organization)
-	      (concat helm-qiita:organization ".qiita.com")
+	  (if (stringp helm-qiita-organization)
+	      (concat helm-qiita-organization ".qiita.com")
 	    "qiita.com")
-	  helm-qiita:username))
+	  helm-qiita-username))
 
-(defun helm-qiita:http-request (&optional url)
-  "Make a new HTTP request for create `helm-qiita:file'.
-Use `helm-qiita:url' if URL is nil."
-  (let ((http-buffer-name helm-qiita:http-buffer-name)
-	(work-buffer-name helm-qiita:work-buffer-name)
+(defun helm-qiita-http-request (&optional url)
+  "Make a new HTTP request for create `helm-qiita-file'.
+Use `helm-qiita-url' if URL is nil."
+  (let ((http-buffer-name helm-qiita-http-buffer-name)
+	(work-buffer-name helm-qiita-work-buffer-name)
 	(proc-name "helm-qiita")
 	(curl-args `("--include" "-X" "GET" "--compressed"
-		     "--header" ,(concat "Authorization: Bearer " helm-qiita:access-token)
-		     ,(if url url helm-qiita:url)))
+		     "--header" ,(concat "Authorization: Bearer " helm-qiita-access-token)
+		     ,(if url url helm-qiita-url)))
 	proc)
     (unless (get-buffer-process http-buffer-name)
       (if (get-buffer http-buffer-name)
@@ -167,51 +167,51 @@ Use `helm-qiita:url' if URL is nil."
 	(if (get-buffer work-buffer-name)
 	    (kill-buffer work-buffer-name))
 	(get-buffer-create work-buffer-name))
-      (helm-qiita:http-debug-start)
+      (helm-qiita-http-debug-start)
       (setq proc (apply 'start-process
 			proc-name
 			http-buffer-name
-			helm-qiita:curl-program
+			helm-qiita-curl-program
 			curl-args))
-      (set-process-sentinel proc 'helm-qiita:http-request-sentinel))))
+      (set-process-sentinel proc 'helm-qiita-http-request-sentinel))))
 
-(defun helm-qiita:http-request-sentinel (process event)
-  "Receive a response of `helm-qiita:http-request'.
+(defun helm-qiita-http-request-sentinel (process event)
+  "Receive a response of `helm-qiita-http-request'.
 Argument PROCESS is a http-request process.
 Argument EVENT is a string describing the type of event."
   (let (valid-response response next-link stock)
-    (with-current-buffer (get-buffer helm-qiita:http-buffer-name)
-      (setq valid-response (helm-qiita:valid-http-responsep))
-      (setq next-link (helm-qiita:next-link))
+    (with-current-buffer (get-buffer helm-qiita-http-buffer-name)
+      (setq valid-response (helm-qiita-valid-http-responsep))
+      (setq next-link (helm-qiita-next-link))
       (setq response (json-read-from-string
 		      (buffer-substring-no-properties
-		       (+ (helm-qiita:point-of-separator) 1) (point-max)))))
-    (with-current-buffer (get-buffer helm-qiita:work-buffer-name)
+		       (+ (helm-qiita-point-of-separator) 1) (point-max)))))
+    (with-current-buffer (get-buffer helm-qiita-work-buffer-name)
       (goto-char (point-max))
       (dotimes (i (length response))
 	(setq stock (aref response i))
 	(insert (format "%s %s [href:%s]\n"
-			(helm-qiita:stock-title stock)
-			(helm-qiita:stock-format-tags stock)
-			(helm-qiita:stock-url stock))))
-      (helm-qiita:http-debug-stop valid-response)
+			(helm-qiita-stock-title stock)
+			(helm-qiita-stock-format-tags stock)
+			(helm-qiita-stock-url stock))))
+      (helm-qiita-http-debug-stop valid-response)
       (if next-link
-	  (helm-qiita:http-request next-link)
-	(write-region (point-min) (point-max) helm-qiita:file)))))
+	  (helm-qiita-http-request next-link)
+	(write-region (point-min) (point-max) helm-qiita-file)))))
 
-(defun helm-qiita:valid-http-responsep ()
+(defun helm-qiita-valid-http-responsep ()
   "Return if the http response is valid."
   (save-excursion
     (goto-char (point-min))
     (re-search-forward
      (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t)))
 
-(defun helm-qiita:next-link ()
+(defun helm-qiita-next-link ()
   "Return the next link the http response has."
   (save-excursion
     (let ((field-body))
       (goto-char (point-min))
-      (when (re-search-forward "^Link: " (helm-qiita:point-of-separator) t)
+      (when (re-search-forward "^Link: " (helm-qiita-point-of-separator) t)
 	(setq field-body (buffer-substring-no-properties (point) (point-at-eol)))
 	(cond
 	 ((string-match "^<\\(https://.*\\)>; rel=\"first\", <\\(https://.*\\)>; rel=\"prev\", <\\(https://.*\\)>; rel=\"next\"" field-body)
@@ -219,75 +219,75 @@ Argument EVENT is a string describing the type of event."
 	 ((string-match "^<\\(https://.*\\)>; rel=\"first\", <\\(https://.*\\)>; rel=\"next\"" field-body)
 	  (match-string 2 field-body)))))))
 
-(defun helm-qiita:point-of-separator ()
+(defun helm-qiita-point-of-separator ()
   "Return point between header and body of the http response, as an integer."
   (save-excursion
     (goto-char (point-min))
     (re-search-forward "^?$" nil t)))
 
-(defun helm-qiita:stock-title (stock)
+(defun helm-qiita-stock-title (stock)
   "Return a title of STOCK."
   (cdr (assoc 'title stock)))
 
-(defun helm-qiita:stock-url (stock)
+(defun helm-qiita-stock-url (stock)
   "Return a url of STOCK."
   (cdr (assoc 'url stock)))
 
-(defun helm-qiita:stock-format-tags (stock)
+(defun helm-qiita-stock-format-tags (stock)
   "Return formatted tags of STOCK."
   (let ((result ""))
     (mapc
      (lambda (tag)
        (setq result (format "%s[%s]" result tag)))
-     (helm-qiita:stock-tags stock))
+     (helm-qiita-stock-tags stock))
     result))
 
-(defun helm-qiita:stock-tags (stock)
+(defun helm-qiita-stock-tags (stock)
   "Return tags of STOCK, as an list."
   (let ((tags (cdr (assoc 'tags stock))) result)
     (dotimes (i (length tags))
       (cl-pushnew (cdr (assoc 'name (aref tags i))) result :test #'equal))
     (reverse result)))
 
-(defun helm-qiita:http-debug-start ()
+(defun helm-qiita-http-debug-start ()
   "Start debug mode."
-  (setq helm-qiita:debug-start-time (current-time)))
+  (setq helm-qiita-debug-start-time (current-time)))
 
-(defun helm-qiita:http-debug-stop (result)
+(defun helm-qiita-http-debug-stop (result)
   "Stop debug mode.
 RESULT is boolean."
-  (if helm-qiita:debug-mode
+  (if helm-qiita-debug-mode
       (message (format "[Q] %s to create %s (%0.1fsec) at %s."
 		       (if result "Success" "Failure")
-		       helm-qiita:file
+		       helm-qiita-file
 		       (time-to-seconds
 			(time-subtract (current-time)
-				       helm-qiita:debug-start-time))
+				       helm-qiita-debug-start-time))
 		       (format-time-string "%Y-%m-%d %H:%M:%S" (current-time))))))
 
-(defun helm-qiita:set-timer ()
+(defun helm-qiita-set-timer ()
   "Set timer."
-  (setq helm-qiita:timer
+  (setq helm-qiita-timer
 	(run-at-time "0 sec"
-		     helm-qiita:interval
-		     #'helm-qiita:http-request)))
+		     helm-qiita-interval
+		     #'helm-qiita-http-request)))
 
-(defun helm-qiita:cancel-timer ()
+(defun helm-qiita-cancel-timer ()
   "Cancel timer."
-  (when helm-qiita:timer
-    (cancel-timer helm-qiita:timer)
-    (setq helm-qiita:timer nil)))
+  (when helm-qiita-timer
+    (cancel-timer helm-qiita-timer)
+    (setq helm-qiita-timer nil)))
 
 ;;;###autoload
-(defun helm-qiita:initialize ()
+(defun helm-qiita-initialize ()
   "Initialize `helm-qiita'."
-  (setq helm-qiita:url
-	(helm-qiita:get-url))
-  (unless helm-qiita:access-token
-    (error "Variable `helm-qiita:access-token' is nil"))
-  (setq helm-qiita:curl-program
-	(helm-qiita:find-curl-program))
-  (helm-qiita:set-timer))
+  (setq helm-qiita-url
+	(helm-qiita-get-url))
+  (unless helm-qiita-access-token
+    (error "Variable `helm-qiita-access-token' is nil"))
+  (setq helm-qiita-curl-program
+	(helm-qiita-find-curl-program))
+  (helm-qiita-set-timer))
 
 (provide 'helm-qiita)
 ;;; helm-qiita.el ends here
