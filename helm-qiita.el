@@ -257,9 +257,9 @@ Argument EVENT is a string describing the type of event."
   "Stop debug mode.
 RESULT is boolean."
   (if helm-qiita-debug-mode
-      (message (format "[Q] %s to create %s (%0.1fsec) at %s."
+      (message (format "[Q] %s to GET %s (%0.1fsec) at %s."
 		       (if result "Success" "Failure")
-		       helm-qiita-file
+		       helm-qiita-url
 		       (time-to-seconds
 			(time-subtract (current-time)
 				       helm-qiita-debug-start-time))
