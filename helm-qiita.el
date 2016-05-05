@@ -177,11 +177,22 @@ Use `helm-qiita-url' if URL is nil."
 
 (defun helm-qiita-http-request-sentinel (process event)
   "Receive a response of `helm-qiita-http-request'.
-Argument PROCESS is a http-request process.
-Argument EVENT is a string describing the type of event."
+PROCESS is a http-request process.
+EVENT is a string describing the type of event."
+  (ignore-errors
+    (helm-qiita-handle-http-response process)))
+
+(defun helm-qiita-handle-http-response (process)
+  "Handle a response of `helm-qiita-http-request'.
+PROCESS is a http-request process.
+If the response is invalid, A error occurs.
+If next-link is exist, continue to request it."
   (let (valid-response response next-link stock)
     (with-current-buffer (get-buffer helm-qiita-http-buffer-name)
       (setq valid-response (helm-qiita-valid-http-responsep))
+      (helm-qiita-http-debug-stop valid-response process)
+      (unless valid-response
+	(error "Invalid http response"))
       (setq next-link (helm-qiita-next-link))
       (setq response (json-read-from-string
 		      (buffer-substring-no-properties
@@ -194,7 +205,6 @@ Argument EVENT is a string describing the type of event."
 			(helm-qiita-stock-title stock)
 			(helm-qiita-stock-format-tags stock)
 			(helm-qiita-stock-url stock))))
-      (helm-qiita-http-debug-stop valid-response)
       (if next-link
 	  (helm-qiita-http-request next-link)
 	(write-region (point-min) (point-max) helm-qiita-file)))))
@@ -253,13 +263,14 @@ Argument EVENT is a string describing the type of event."
   "Start debug mode."
   (setq helm-qiita-debug-start-time (current-time)))
 
-(defun helm-qiita-http-debug-stop (result)
+(defun helm-qiita-http-debug-stop (result process)
   "Stop debug mode.
-RESULT is boolean."
+RESULT is boolean.
+PROCESS is a http-request process."
   (if helm-qiita-debug-mode
       (message (format "[Q] %s to GET %s (%0.1fsec) at %s."
 		       (if result "Success" "Failure")
-		       helm-qiita-url
+		       (car (last (process-command process)))
 		       (time-to-seconds
 			(time-subtract (current-time)
 				       helm-qiita-debug-start-time))
