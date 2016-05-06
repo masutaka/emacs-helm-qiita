@@ -175,10 +175,10 @@ Use `helm-qiita-url' if URL is nil."
 			curl-args))
       (set-process-sentinel proc 'helm-qiita-http-request-sentinel))))
 
-(defun helm-qiita-http-request-sentinel (process event)
+(defun helm-qiita-http-request-sentinel (process _event)
   "Receive a response of `helm-qiita-http-request'.
 PROCESS is a http-request process.
-EVENT is a string describing the type of event."
+_EVENT is a string describing the type of event."
   (ignore-errors
     (helm-qiita-handle-http-response process)))
 
