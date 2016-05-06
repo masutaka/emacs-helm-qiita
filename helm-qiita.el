@@ -178,7 +178,7 @@ Use `helm-qiita-url' if URL is nil."
 (defun helm-qiita-http-request-sentinel (process _event)
   "Receive a response of `helm-qiita-http-request'.
 PROCESS is a http-request process.
-EVENT is a string describing the type of event."
+_EVENT is a string describing the type of event."
   (ignore-errors
     (helm-qiita-handle-http-response process)))
 
