@@ -70,9 +70,15 @@ You can create in https://qiita.com/settings/applications"
   :type 'integer
   :group 'helm-qiita)
 
+;;; Internal Variables
+
 (defvar helm-qiita-url nil
   "Cache a result of `helm-qiita-get-url'.
 DO NOT SET VALUE MANUALLY.")
+
+(defvar helm-qiita-api-per-page 20
+  "Page size of Qiita API.
+See https://qiita.com/api/v2/docs")
 
 (defvar helm-qiita-curl-program nil
   "Cache a result of `helm-qiita-find-curl-program'.
@@ -92,6 +98,8 @@ DO NOT SET VALUE MANUALLY.")
 
 (defvar helm-qiita-debug-mode nil)
 (defvar helm-qiita-debug-start-time nil)
+
+;;; Helm source
 
 (defun helm-qiita-load ()
   "Load `helm-qiita-file'."
@@ -134,21 +142,7 @@ Argument CANDIDATE a line string of a stock."
     (helm :sources helm-qiita-source
 	  :prompt "Find Qiita Stocks: ")))
 
-(defun helm-qiita-find-curl-program ()
-  "Return an appropriate `curl' program pathname or error if not found."
-  (or
-   (executable-find "curl")
-   (error "Cannot find `curl' helm-qiita.el requires")))
-
-(defun helm-qiita-get-url ()
-  "Return Qiita URL or error if `helm-qiita-username' is nil."
-  (unless helm-qiita-username
-    (error "Variable `helm-qiita-username' is nil"))
-  (format "https://%s/api/v2/users/%s/stocks?page=1&per_page=20"
-	  (if (stringp helm-qiita-organization)
-	      (concat helm-qiita-organization ".qiita.com")
-	    "qiita.com")
-	  helm-qiita-username))
+;;; Process handler
 
 (defun helm-qiita-http-request (&optional url)
   "Make a new HTTP request for create `helm-qiita-file'.
@@ -160,61 +154,53 @@ Use `helm-qiita-url' if URL is nil."
 		     "--header" ,(concat "Authorization: Bearer " helm-qiita-access-token)
 		     ,(if url url helm-qiita-url)))
 	proc)
-    (unless (get-buffer-process http-buffer-name)
-      (if (get-buffer http-buffer-name)
-	  (kill-buffer http-buffer-name))
-      (unless url ;; 1st page
-	(if (get-buffer work-buffer-name)
-	    (kill-buffer work-buffer-name))
-	(get-buffer-create work-buffer-name))
-      (helm-qiita-http-debug-start)
-      (setq proc (apply 'start-process
-			proc-name
-			http-buffer-name
-			helm-qiita-curl-program
-			curl-args))
-      (set-process-sentinel proc 'helm-qiita-http-request-sentinel))))
+    (unless url ;; 1st page
+      (if (get-buffer work-buffer-name)
+	  (kill-buffer work-buffer-name))
+      (get-buffer-create work-buffer-name))
+    (helm-qiita-http-debug-start)
+    (setq proc (apply 'start-process
+		      proc-name
+		      http-buffer-name
+		      helm-qiita-curl-program
+		      curl-args))
+    (set-process-sentinel proc 'helm-qiita-http-request-sentinel)))
 
 (defun helm-qiita-http-request-sentinel (process _event)
-  "Receive a response of `helm-qiita-http-request'.
-PROCESS is a http-request process.
-_EVENT is a string describing the type of event."
-  (ignore-errors
-    (helm-qiita-handle-http-response process)))
-
-(defun helm-qiita-handle-http-response (process)
   "Handle a response of `helm-qiita-http-request'.
 PROCESS is a http-request process.
-If the response is invalid, A error occurs.
-If next-link is exist, continue to request it."
-  (let (valid-response response next-link stock)
-    (with-current-buffer (get-buffer helm-qiita-http-buffer-name)
-      (setq valid-response (helm-qiita-valid-http-responsep))
-      (helm-qiita-http-debug-finish valid-response process)
-      (unless valid-response
-	(error "Invalid http response"))
-      (setq next-link (helm-qiita-next-link))
-      (setq response (json-read-from-string
-		      (buffer-substring-no-properties
-		       (+ (helm-qiita-point-of-separator) 1) (point-max)))))
-    (with-current-buffer (get-buffer helm-qiita-work-buffer-name)
-      (goto-char (point-max))
-      (dotimes (i (length response))
-	(setq stock (aref response i))
-	(insert (format "%s %s [href:%s]\n"
-			(helm-qiita-stock-title stock)
-			(helm-qiita-stock-format-tags stock)
-			(helm-qiita-stock-url stock))))
-      (if next-link
-	  (helm-qiita-http-request next-link)
-	(write-region (point-min) (point-max) helm-qiita-file)))))
+_EVENT is a string describing the type of event.
+If next-link is exist, requests it.
+If the response is invalid, stops to request."
+  (let ((http-buffer-name helm-qiita-http-buffer-name))
+    (condition-case nil
+	(let (response-body next-link)
+	  (with-current-buffer (get-buffer http-buffer-name)
+	    (unless (helm-qiita-valid-http-responsep process)
+	      (error "Invalid http response"))
+	    (setq next-link (helm-qiita-next-link))
+	    (setq response-body (helm-qiita-response-body)))
+	  (kill-buffer http-buffer-name)
+	  (with-current-buffer (get-buffer helm-qiita-work-buffer-name)
+	    (goto-char (point-max))
+	    (helm-qiita-insert-stocks response-body)
+	    (if next-link
+		(helm-qiita-http-request next-link)
+	      (write-region (point-min) (point-max) helm-qiita-file))))
+      (error
+       (kill-buffer http-buffer-name)))))
 
-(defun helm-qiita-valid-http-responsep ()
-  "Return if the http response is valid."
+(defun helm-qiita-valid-http-responsep (process)
+  "Return if the http response is valid.
+Argument PROCESS is a http-request process.
+Should to call in `helm-qiita-http-buffer-name'."
   (save-excursion
-    (goto-char (point-min))
-    (re-search-forward
-     (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t)))
+    (let ((result))
+      (goto-char (point-min))
+      (setq result (re-search-forward
+		    (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t))
+      (helm-qiita-http-debug-finish result process)
+      result)))
 
 (defun helm-qiita-next-link ()
   "Return the next link the http response has."
@@ -234,6 +220,24 @@ If next-link is exist, continue to request it."
   (save-excursion
     (goto-char (point-min))
     (re-search-forward "^?$" nil t)))
+
+(defun helm-qiita-response-body ()
+  "Read http response body as a json.
+Should to call in `helm-qiita-http-buffer-name'."
+  (json-read-from-string
+   (buffer-substring-no-properties
+    (+ (helm-qiita-point-of-separator) 1) (point-max))))
+
+(defun helm-qiita-insert-stocks (response-body)
+  "Insert Qiita stock as the format of `helm-qiita-file'.
+Argument RESPONSE-BODY is http response body as a json"
+  (let ((stock))
+    (dotimes (i (length response-body))
+      (setq stock (aref response-body i))
+      (insert (format "%s %s [href:%s]\n"
+		      (helm-qiita-stock-title stock)
+		      (helm-qiita-stock-format-tags stock)
+		      (helm-qiita-stock-url stock))))))
 
 (defun helm-qiita-stock-title (stock)
   "Return a title of STOCK."
@@ -259,6 +263,8 @@ If next-link is exist, continue to request it."
       (cl-pushnew (cdr (assoc 'name (aref tags i))) result :test #'equal))
     (reverse result)))
 
+;;; Debug
+
 (defun helm-qiita-http-debug-start ()
   "Start debug mode."
   (setq helm-qiita-debug-start-time (current-time)))
@@ -275,6 +281,8 @@ PROCESS is a http-request process."
 			(time-subtract (current-time)
 				       helm-qiita-debug-start-time))
 		       (format-time-string "%Y-%m-%d %H:%M:%S" (current-time))))))
+
+;;; Timer
 
 (defun helm-qiita-set-timer ()
   "Set timer."
@@ -300,5 +308,23 @@ PROCESS is a http-request process."
 	(helm-qiita-find-curl-program))
   (helm-qiita-set-timer))
 
+(defun helm-qiita-get-url ()
+  "Return Qiita URL or error if `helm-qiita-username' is nil."
+  (unless helm-qiita-username
+    (error "Variable `helm-qiita-username' is nil"))
+  (format "https://%s/api/v2/users/%s/stocks?page=1&per_page=%d"
+	  (if (stringp helm-qiita-organization)
+	      (concat helm-qiita-organization ".qiita.com")
+	    "qiita.com")
+	  helm-qiita-username
+	  helm-qiita-api-per-page))
+
+(defun helm-qiita-find-curl-program ()
+  "Return an appropriate `curl' program pathname or error if not found."
+  (or
+   (executable-find "curl")
+   (error "Cannot find `curl' helm-qiita.el requires")))
+
 (provide 'helm-qiita)
+
 ;;; helm-qiita.el ends here
