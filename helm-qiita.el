@@ -154,27 +154,26 @@ Use `helm-qiita-url' if URL is nil."
 		     "--header" ,(concat "Authorization: Bearer " helm-qiita-access-token)
 		     ,(if url url helm-qiita-url)))
 	proc)
-    (unless (get-buffer-process http-buffer-name)
-      (if (get-buffer http-buffer-name)
-	  (kill-buffer http-buffer-name))
-      (unless url ;; 1st page
-	(if (get-buffer work-buffer-name)
-	    (kill-buffer work-buffer-name))
-	(get-buffer-create work-buffer-name))
-      (helm-qiita-http-debug-start)
-      (setq proc (apply 'start-process
-			proc-name
-			http-buffer-name
-			helm-qiita-curl-program
-			curl-args))
-      (set-process-sentinel proc 'helm-qiita-http-request-sentinel))))
+    (unless url ;; 1st page
+      (if (get-buffer work-buffer-name)
+	  (kill-buffer work-buffer-name))
+      (get-buffer-create work-buffer-name))
+    (helm-qiita-http-debug-start)
+    (setq proc (apply 'start-process
+		      proc-name
+		      http-buffer-name
+		      helm-qiita-curl-program
+		      curl-args))
+    (set-process-sentinel proc 'helm-qiita-http-request-sentinel)))
 
 (defun helm-qiita-http-request-sentinel (process _event)
   "Receive a response of `helm-qiita-http-request'.
 PROCESS is a http-request process.
 _EVENT is a string describing the type of event."
-  (ignore-errors
-    (helm-qiita-handle-http-response process)))
+  (condition-case nil
+      (helm-qiita-handle-http-response process)
+    (error
+     (kill-buffer helm-qiita-http-buffer-name))))
 
 (defun helm-qiita-handle-http-response (process)
   "Handle a response of `helm-qiita-http-request'.
@@ -189,14 +188,15 @@ If next-link is exist, continue to request it."
       (setq response (json-read-from-string
 		      (buffer-substring-no-properties
 		       (+ (helm-qiita-point-of-separator) 1) (point-max)))))
+    (kill-buffer helm-qiita-http-buffer-name)
     (with-current-buffer (get-buffer helm-qiita-work-buffer-name)
       (goto-char (point-max))
       (dotimes (i (length response))
-	(setq stock (aref response i))
-	(insert (format "%s %s [href:%s]\n"
-			(helm-qiita-stock-title stock)
-			(helm-qiita-stock-format-tags stock)
-			(helm-qiita-stock-url stock))))
+       (setq stock (aref response i))
+       (insert (format "%s %s [href:%s]\n"
+                       (helm-qiita-stock-title stock)
+                       (helm-qiita-stock-format-tags stock)
+                       (helm-qiita-stock-url stock))))
       (if next-link
 	  (helm-qiita-http-request next-link)
 	(write-region (point-min) (point-max) helm-qiita-file)))))
