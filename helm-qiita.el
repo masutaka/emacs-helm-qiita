@@ -180,23 +180,16 @@ _EVENT is a string describing the type of event."
 PROCESS is a http-request process.
 If the response is invalid, A error occurs.
 If next-link is exist, continue to request it."
-  (let (response next-link stock)
+  (let (response-body next-link)
     (with-current-buffer (get-buffer helm-qiita-http-buffer-name)
       (unless (helm-qiita-valid-http-responsep process)
 	(error "Invalid http response"))
       (setq next-link (helm-qiita-next-link))
-      (setq response (json-read-from-string
-		      (buffer-substring-no-properties
-		       (+ (helm-qiita-point-of-separator) 1) (point-max)))))
+      (setq response-body (helm-qiita-response-body)))
     (kill-buffer helm-qiita-http-buffer-name)
     (with-current-buffer (get-buffer helm-qiita-work-buffer-name)
       (goto-char (point-max))
-      (dotimes (i (length response))
-       (setq stock (aref response i))
-       (insert (format "%s %s [href:%s]\n"
-                       (helm-qiita-stock-title stock)
-                       (helm-qiita-stock-format-tags stock)
-                       (helm-qiita-stock-url stock))))
+      (helm-qiita-insert-stocks response-body)
       (if next-link
 	  (helm-qiita-http-request next-link)
 	(write-region (point-min) (point-max) helm-qiita-file)))))
@@ -231,6 +224,24 @@ Should to call in `helm-qiita-http-buffer-name'."
   (save-excursion
     (goto-char (point-min))
     (re-search-forward "^?$" nil t)))
+
+(defun helm-qiita-response-body ()
+  "Read http response body as a json.
+Should to call in `helm-qiita-http-buffer-name'."
+  (json-read-from-string
+   (buffer-substring-no-properties
+    (+ (helm-qiita-point-of-separator) 1) (point-max))))
+
+(defun helm-qiita-insert-stocks (response-body)
+  "Insert Qiita stock as the format of `helm-qiita-file'.
+Argument RESPONSE-BODY is http response body as a json"
+  (let ((stock))
+    (dotimes (i (length response-body))
+      (setq stock (aref response-body i))
+      (insert (format "%s %s [href:%s]\n"
+		      (helm-qiita-stock-title stock)
+		      (helm-qiita-stock-format-tags stock)
+		      (helm-qiita-stock-url stock))))))
 
 (defun helm-qiita-stock-title (stock)
   "Return a title of STOCK."
