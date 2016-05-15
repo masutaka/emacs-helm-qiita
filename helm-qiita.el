@@ -76,6 +76,10 @@ You can create in https://qiita.com/settings/applications"
   "Cache a result of `helm-qiita-get-url'.
 DO NOT SET VALUE MANUALLY.")
 
+(defvar helm-qiita-api-per-page 20
+  "Page size of Qiita API.
+See https://qiita.com/api/v2/docs")
+
 (defvar helm-qiita-curl-program nil
   "Cache a result of `helm-qiita-find-curl-program'.
 DO NOT SET VALUE MANUALLY.")
@@ -298,11 +302,12 @@ PROCESS is a http-request process."
   "Return Qiita URL or error if `helm-qiita-username' is nil."
   (unless helm-qiita-username
     (error "Variable `helm-qiita-username' is nil"))
-  (format "https://%s/api/v2/users/%s/stocks?page=1&per_page=20"
+  (format "https://%s/api/v2/users/%s/stocks?page=1&per_page=%d"
 	  (if (stringp helm-qiita-organization)
 	      (concat helm-qiita-organization ".qiita.com")
 	    "qiita.com")
-	  helm-qiita-username))
+	  helm-qiita-username
+	  helm-qiita-api-per-page))
 
 (defun helm-qiita-find-curl-program ()
   "Return an appropriate `curl' program pathname or error if not found."
