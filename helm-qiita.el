@@ -167,32 +167,28 @@ Use `helm-qiita-url' if URL is nil."
     (set-process-sentinel proc 'helm-qiita-http-request-sentinel)))
 
 (defun helm-qiita-http-request-sentinel (process _event)
-  "Receive a response of `helm-qiita-http-request'.
-PROCESS is a http-request process.
-_EVENT is a string describing the type of event."
-  (condition-case nil
-      (helm-qiita-handle-http-response process)
-    (error
-     (kill-buffer helm-qiita-http-buffer-name))))
-
-(defun helm-qiita-handle-http-response (process)
   "Handle a response of `helm-qiita-http-request'.
 PROCESS is a http-request process.
-If the response is invalid, A error occurs.
-If next-link is exist, continue to request it."
-  (let (response-body next-link)
-    (with-current-buffer (get-buffer helm-qiita-http-buffer-name)
-      (unless (helm-qiita-valid-http-responsep process)
-	(error "Invalid http response"))
-      (setq next-link (helm-qiita-next-link))
-      (setq response-body (helm-qiita-response-body)))
-    (kill-buffer helm-qiita-http-buffer-name)
-    (with-current-buffer (get-buffer helm-qiita-work-buffer-name)
-      (goto-char (point-max))
-      (helm-qiita-insert-stocks response-body)
-      (if next-link
-	  (helm-qiita-http-request next-link)
-	(write-region (point-min) (point-max) helm-qiita-file)))))
+_EVENT is a string describing the type of event.
+If next-link is exist, requests it.
+If the response is invalid, stops to request."
+  (let ((http-buffer-name helm-qiita-http-buffer-name))
+    (condition-case nil
+	(let (response-body next-link)
+	  (with-current-buffer (get-buffer http-buffer-name)
+	    (unless (helm-qiita-valid-http-responsep process)
+	      (error "Invalid http response"))
+	    (setq next-link (helm-qiita-next-link))
+	    (setq response-body (helm-qiita-response-body)))
+	  (kill-buffer http-buffer-name)
+	  (with-current-buffer (get-buffer helm-qiita-work-buffer-name)
+	    (goto-char (point-max))
+	    (helm-qiita-insert-stocks response-body)
+	    (if next-link
+		(helm-qiita-http-request next-link)
+	      (write-region (point-min) (point-max) helm-qiita-file))))
+      (error
+       (kill-buffer http-buffer-name)))))
 
 (defun helm-qiita-valid-http-responsep (process)
   "Return if the http response is valid.
