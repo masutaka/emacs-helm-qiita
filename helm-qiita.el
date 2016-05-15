@@ -181,11 +181,9 @@ _EVENT is a string describing the type of event."
 PROCESS is a http-request process.
 If the response is invalid, A error occurs.
 If next-link is exist, continue to request it."
-  (let (valid-response response next-link stock)
+  (let (response next-link stock)
     (with-current-buffer (get-buffer helm-qiita-http-buffer-name)
-      (setq valid-response (helm-qiita-valid-http-responsep))
-      (helm-qiita-http-debug-finish valid-response process)
-      (unless valid-response
+      (unless (helm-qiita-valid-http-responsep process)
 	(error "Invalid http response"))
       (setq next-link (helm-qiita-next-link))
       (setq response (json-read-from-string
@@ -203,12 +201,17 @@ If next-link is exist, continue to request it."
 	  (helm-qiita-http-request next-link)
 	(write-region (point-min) (point-max) helm-qiita-file)))))
 
-(defun helm-qiita-valid-http-responsep ()
-  "Return if the http response is valid."
+(defun helm-qiita-valid-http-responsep (process)
+  "Return if the http response is valid.
+Argument PROCESS is a http-request process.
+Should to call in `helm-qiita-http-buffer-name'."
   (save-excursion
-    (goto-char (point-min))
-    (re-search-forward
-     (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t)))
+    (let ((result))
+      (goto-char (point-min))
+      (setq result (re-search-forward
+		    (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t))
+      (helm-qiita-http-debug-finish result process)
+      result)))
 
 (defun helm-qiita-next-link ()
   "Return the next link the http response has."
