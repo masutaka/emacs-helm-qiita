@@ -70,6 +70,8 @@ You can create in https://qiita.com/settings/applications"
   :type 'integer
   :group 'helm-qiita)
 
+;;; Internal Variables
+
 (defvar helm-qiita-url nil
   "Cache a result of `helm-qiita-get-url'.
 DO NOT SET VALUE MANUALLY.")
@@ -92,6 +94,8 @@ DO NOT SET VALUE MANUALLY.")
 
 (defvar helm-qiita-debug-mode nil)
 (defvar helm-qiita-debug-start-time nil)
+
+;;; Helm source
 
 (defun helm-qiita-load ()
   "Load `helm-qiita-file'."
@@ -134,21 +138,7 @@ Argument CANDIDATE a line string of a stock."
     (helm :sources helm-qiita-source
 	  :prompt "Find Qiita Stocks: ")))
 
-(defun helm-qiita-find-curl-program ()
-  "Return an appropriate `curl' program pathname or error if not found."
-  (or
-   (executable-find "curl")
-   (error "Cannot find `curl' helm-qiita.el requires")))
-
-(defun helm-qiita-get-url ()
-  "Return Qiita URL or error if `helm-qiita-username' is nil."
-  (unless helm-qiita-username
-    (error "Variable `helm-qiita-username' is nil"))
-  (format "https://%s/api/v2/users/%s/stocks?page=1&per_page=20"
-	  (if (stringp helm-qiita-organization)
-	      (concat helm-qiita-organization ".qiita.com")
-	    "qiita.com")
-	  helm-qiita-username))
+;;; Process handler
 
 (defun helm-qiita-http-request (&optional url)
   "Make a new HTTP request for create `helm-qiita-file'.
@@ -259,6 +249,8 @@ If next-link is exist, continue to request it."
       (cl-pushnew (cdr (assoc 'name (aref tags i))) result :test #'equal))
     (reverse result)))
 
+;;; Debug
+
 (defun helm-qiita-http-debug-start ()
   "Start debug mode."
   (setq helm-qiita-debug-start-time (current-time)))
@@ -275,6 +267,8 @@ PROCESS is a http-request process."
 			(time-subtract (current-time)
 				       helm-qiita-debug-start-time))
 		       (format-time-string "%Y-%m-%d %H:%M:%S" (current-time))))))
+
+;;; Timer
 
 (defun helm-qiita-set-timer ()
   "Set timer."
@@ -300,5 +294,22 @@ PROCESS is a http-request process."
 	(helm-qiita-find-curl-program))
   (helm-qiita-set-timer))
 
+(defun helm-qiita-get-url ()
+  "Return Qiita URL or error if `helm-qiita-username' is nil."
+  (unless helm-qiita-username
+    (error "Variable `helm-qiita-username' is nil"))
+  (format "https://%s/api/v2/users/%s/stocks?page=1&per_page=20"
+	  (if (stringp helm-qiita-organization)
+	      (concat helm-qiita-organization ".qiita.com")
+	    "qiita.com")
+	  helm-qiita-username))
+
+(defun helm-qiita-find-curl-program ()
+  "Return an appropriate `curl' program pathname or error if not found."
+  (or
+   (executable-find "curl")
+   (error "Cannot find `curl' helm-qiita.el requires")))
+
 (provide 'helm-qiita)
+
 ;;; helm-qiita.el ends here

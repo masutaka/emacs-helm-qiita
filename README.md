@@ -15,7 +15,7 @@ Also supports [Qiita:Team](https://teams.qiita.com/).
 ## Requirements
 
 * Emacs 24.5 or higher
-* helm 1.9.0 or higher
+* helm 1.9.5 or higher
 * curl
 
 ## Installation
