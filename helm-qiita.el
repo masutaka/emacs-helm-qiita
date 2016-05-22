@@ -76,7 +76,7 @@ You can create in https://qiita.com/settings/applications"
   "Cache a result of `helm-qiita-get-url'.
 DO NOT SET VALUE MANUALLY.")
 
-(defvar helm-qiita-api-per-page 20
+(defvar helm-qiita-api-per-page 100
   "Page size of Qiita API.
 See https://qiita.com/api/v2/docs")
 
