@@ -154,17 +154,18 @@ Use `helm-qiita-url' if URL is nil."
 		     "--header" ,(concat "Authorization: Bearer " helm-qiita-access-token)
 		     ,(if url url helm-qiita-url)))
 	proc)
-    (unless url ;; 1st page
-      (if (get-buffer work-buffer-name)
-	  (kill-buffer work-buffer-name))
-      (get-buffer-create work-buffer-name))
-    (helm-qiita-http-debug-start)
-    (setq proc (apply 'start-process
-		      proc-name
-		      http-buffer-name
-		      helm-qiita-curl-program
-		      curl-args))
-    (set-process-sentinel proc 'helm-qiita-http-request-sentinel)))
+    (unless (get-buffer-process http-buffer-name)
+      (unless url ;; 1st page
+	(if (get-buffer work-buffer-name)
+	    (kill-buffer work-buffer-name))
+	(get-buffer-create work-buffer-name))
+      (helm-qiita-http-debug-start)
+      (setq proc (apply 'start-process
+			proc-name
+			http-buffer-name
+			helm-qiita-curl-program
+			curl-args))
+      (set-process-sentinel proc 'helm-qiita-http-request-sentinel))))
 
 (defun helm-qiita-http-request-sentinel (process _event)
   "Handle a response of `helm-qiita-http-request'.
