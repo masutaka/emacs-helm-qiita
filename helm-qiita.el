@@ -5,7 +5,7 @@
 ;; Author: Takashi Masuda <masutaka.net@gmail.com>
 ;; URL: https://github.com/masutaka/emacs-helm-qiita
 ;; Version: 1.0.0
-;; Package-Requires: ((helm "1.9.5") (cl-lib "0.5"))
+;; Package-Requires: ((helm "1.9.5"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 
 (require 'helm)
 (require 'json)
-(require 'cl-lib)
 
 (defgroup helm-qiita nil
   "Qiita with helm interface"
@@ -261,7 +260,7 @@ Argument RESPONSE-BODY is http response body as a json"
   "Return tags of STOCK, as an list."
   (let ((tags (cdr (assoc 'tags stock))) result)
     (dotimes (i (length tags))
-      (cl-pushnew (cdr (assoc 'name (aref tags i))) result :test #'equal))
+      (setq result (cons (cdr (assoc 'name (aref tags i))) result)))
     (reverse result)))
 
 ;;; Debug
