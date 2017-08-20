@@ -1,4 +1,12 @@
-# helm-qiita.el [![melpa badge][melpa-badge]][melpa-link] [![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
+# helm-qiita.el
+
+[![melpa badge][melpa-badge]][melpa-link]
+[![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
+
+[melpa-link]: https://melpa.org/#/helm-qiita
+[melpa-stable-link]: https://stable.melpa.org/#/helm-qiita
+[melpa-badge]: https://melpa.org/packages/helm-qiita-badge.svg
+[melpa-stable-badge]: https://stable.melpa.org/packages/helm-qiita-badge.svg
 
 ## Introduction
 
@@ -42,8 +50,3 @@ Requires scopes `read_qiita` or `read_qiita_team` for `helm-qiita-access-token`.
 ### `helm-qiita-source`
 
 * A helm source for your Qiita Stocks.
-
-[melpa-link]: https://melpa.org/#/helm-qiita
-[melpa-stable-link]: https://stable.melpa.org/#/helm-qiita
-[melpa-badge]: https://melpa.org/packages/helm-qiita-badge.svg
-[melpa-stable-badge]: https://stable.melpa.org/packages/helm-qiita-badge.svg
