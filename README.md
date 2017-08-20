@@ -20,7 +20,7 @@ Also supports [Qiita:Team](https://teams.qiita.com/).
 
 ## Installation
 
-You can install `helm-qiita.el` from [MELPA](https://github.com/milkypostman/melpa.git) with package.el (`M-x package-install helm-qiita`).
+You can install `helm-qiita.el` from [MELPA](https://melpa.org) with package.el (`M-x package-install helm-qiita`).
 
 ## Setup
 
@@ -43,7 +43,7 @@ Requires scopes `read_qiita` or `read_qiita_team` for `helm-qiita-access-token`.
 
 * A helm source for your Qiita Stocks.
 
-[melpa-link]: http://melpa.org/#/helm-qiita
-[melpa-stable-link]: http://stable.melpa.org/#/helm-qiita
-[melpa-badge]: http://melpa.org/packages/helm-qiita-badge.svg
-[melpa-stable-badge]: http://stable.melpa.org/packages/helm-qiita-badge.svg
+[melpa-link]: https://melpa.org/#/helm-qiita
+[melpa-stable-link]: https://stable.melpa.org/#/helm-qiita
+[melpa-badge]: https://melpa.org/packages/helm-qiita-badge.svg
+[melpa-stable-badge]: https://stable.melpa.org/packages/helm-qiita-badge.svg
