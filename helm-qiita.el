@@ -98,16 +98,22 @@ DO NOT SET VALUE MANUALLY.")
 (defvar helm-qiita-debug-mode nil)
 (defvar helm-qiita-debug-start-time nil)
 
+;;; Macro
+
+(defmacro helm-qiita-file-check (&rest body)
+  `(if (file-exists-p helm-qiita-file)
+       ,@body
+     (message "%s not found. Please wait up to %d minutes."
+	      helm-qiita-file (/ helm-qiita-interval 60))))
+
 ;;; Helm source
 
 (defun helm-qiita-load ()
   "Load `helm-qiita-file'."
-  (if (file-exists-p helm-qiita-file)
-      (with-current-buffer (helm-candidate-buffer 'global)
+  (helm-qiita-file-check
+   (with-current-buffer (helm-candidate-buffer 'global)
 	(let ((coding-system-for-read 'utf-8))
-	  (insert-file-contents helm-qiita-file)))
-    (message "%s not found. Please wait up to %d minutes."
-	     helm-qiita-file (/ helm-qiita-interval 60))))
+	  (insert-file-contents helm-qiita-file)))))
 
 (defvar helm-qiita-action
   '(("Browse URL" . helm-qiita-browse-url)
@@ -139,11 +145,9 @@ Argument CANDIDATE a line string of a stock."
   "Search Qiita Stocks using `helm'."
   (interactive)
   (let ((helm-full-frame helm-qiita-full-frame))
-    (if (file-exists-p helm-qiita-file)
-	(helm :sources helm-qiita-source
-	      :prompt "Find Qiita Stocks: ")
-      (message "%s not found. Please wait up to %d minutes."
-	       helm-qiita-file (/ helm-qiita-interval 60)))))
+    (helm-qiita-file-check
+     (helm :sources helm-qiita-source
+	   :prompt "Find Qiita Stocks: "))))
 
 ;;; Process handler
 
