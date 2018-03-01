@@ -205,8 +205,7 @@ Should to call in `helm-qiita-http-buffer-name'."
   (save-excursion
     (let ((result))
       (goto-char (point-min))
-      (setq result (re-search-forward
-		    (concat "^" (regexp-quote "HTTP/1.1 200 OK")) (point-at-eol) t))
+      (setq result (re-search-forward "^HTTP/2 200" (point-at-eol) t))
       (helm-qiita-http-debug-finish result process)
       result)))
 
