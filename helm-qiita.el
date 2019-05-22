@@ -59,7 +59,7 @@ You can create in https://qiita.com/settings/applications"
 		 string)
   :group 'helm-qiita)
 
-(defcustom helm-qiita-candidate-number-limit 10000
+(defcustom helm-qiita-candidate-number-limit 100
   "Candidate number limit."
   :type 'integer
   :group 'helm-qiita)
