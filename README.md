@@ -39,7 +39,9 @@ You can install `helm-qiita.el` from [MELPA](https://melpa.org) with package.el 
 (helm-qiita-initialize)
 ```
 
-Requires scopes `read_qiita` or `read_qiita_team` for `helm-qiita-access-token`.
+The required scope is `read_qiita` for `helm-qiita-access-token`.
+
+Also add `read_qiita_team` in the case of Qiita:Team.
 
 ## Usage
 

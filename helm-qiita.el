@@ -47,7 +47,9 @@
 
 (defcustom helm-qiita-access-token nil
   "Your Qiita access token.
-You can create in https://qiita.com/settings/applications"
+You can create on https://qiita.com/settings/applications
+The required scope is `read_qiita`.
+Also add `read_qiita_team` in the case of Qiita:Team."
   :type '(choice (const nil)
 		 string)
   :group 'helm-qiita)
