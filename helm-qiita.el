@@ -101,6 +101,7 @@ DO NOT SET VALUE MANUALLY.")
 ;;; Macro
 
 (defmacro helm-qiita-file-check (&rest body)
+  "The BODY is evaluated only when `helm-qiita-file' exists."
   `(if (file-exists-p helm-qiita-file)
        ,@body
      (message "%s not found. Please wait up to %d minutes."
