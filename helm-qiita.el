@@ -83,10 +83,10 @@ See https://qiita.com/api/v2/docs")
   "Cache a result of `helm-qiita-find-curl-program'.
 DO NOT SET VALUE MANUALLY.")
 
-(defvar helm-qiita-http-buffer-name " *helm-qiita-http*"
+(defconst helm-qiita-http-buffer-name " *helm-qiita-http*"
   "HTTP Working buffer name of `helm-qiita-http-request'.")
 
-(defvar helm-qiita-work-buffer-name " *helm-qiita-work*"
+(defconst helm-qiita-work-buffer-name " *helm-qiita-work*"
   "Working buffer name of `helm-qiita-http-request'.")
 
 (defvar helm-qiita-full-frame helm-full-frame)
@@ -281,13 +281,13 @@ Argument RESPONSE-BODY is http response body as a json"
 RESULT is boolean.
 PROCESS is a http-request process."
   (if helm-qiita-debug-mode
-      (message (format "[Q] %s to GET %s (%0.1fsec) at %s."
-		       (if result "Success" "Failure")
-		       (car (last (process-command process)))
-		       (time-to-seconds
-			(time-subtract (current-time)
-				       helm-qiita-debug-start-time))
-		       (format-time-string "%Y-%m-%d %H:%M:%S" (current-time))))))
+      (message "[Q] %s to GET %s (%0.1fsec) at %s."
+	       (if result "Success" "Failure")
+	       (car (last (process-command process)))
+	       (time-to-seconds
+		(time-subtract (current-time)
+			       helm-qiita-debug-start-time))
+	       (format-time-string "%Y-%m-%d %H:%M:%S" (current-time)))))
 
 ;;; Timer
 
