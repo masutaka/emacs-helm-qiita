@@ -133,7 +133,7 @@ Argument CANDIDATE a line string of a stock."
   (message (match-string 1 candidate)))
 
 (defvar helm-qiita-source
-  (helm-build-in-buffer-source "Qiita Stocks"
+  (helm-build-in-buffer-source "Qiita stocks"
     :init 'helm-qiita-load
     :action 'helm-qiita-action
     :candidate-number-limit helm-qiita-candidate-number-limit
